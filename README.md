@@ -95,6 +95,7 @@ Trabajé con **Claude Code** y [Spec Kit](https://github.com/github/spec-kit), e
 - **La estructura.** El primer plan usaba carpetas por funcionalidad, con un archivo por componente y por hook (unos 25 archivos). Lo cambié a: componentes reutilizables agrupados, un único archivo para la API, los hooks aparte y un máximo de 150 líneas por archivo.
 - **Vite en lugar de Next.** El README inicial del repo decía Next; lo confirmé después de comparar las dos opciones.
 - **El idioma.** La interfaz y el README en español; el código, los commits y los PRs en inglés.
+- **`useCallback` innecesarios.** La IA había envuelto en `useCallback` las funciones de `useCreatedPosts`. Al preguntarle por qué, reconoció que nadie compara esas referencias: no hay `React.memo` ni dependencias de efectos. Los quité.
 
 **Qué hubo que corregir durante la implementación**, porque la realidad no coincidía con el plan:
 
