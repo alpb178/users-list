@@ -1,5 +1,5 @@
 import { useUsers } from '../hooks'
-import { Card, ErrorMessage, StatusMessage } from './ui'
+import { Card, ErrorMessage, StatusMessage } from './ui/display'
 
 export function UsersPanel() {
   const { data: users, isPending, isError, refetch } = useUsers()
