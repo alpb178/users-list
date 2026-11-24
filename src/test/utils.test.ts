@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { filterUsersByName } from '../utils'
+import { filterUsersByName, validatePostDraft } from '../utils'
 import { users } from './server'
 
 const names = (query: string) =>
@@ -18,5 +18,24 @@ describe('filterUsersByName', () => {
 
   test('returns no users when nothing matches', () => {
     expect(names('zzz')).toEqual([])
+  })
+})
+
+describe('validatePostDraft', () => {
+  test('requires both title and body', () => {
+    expect(validatePostDraft({ title: '', body: '' })).toEqual({
+      title: 'El título es obligatorio',
+      body: 'El texto es obligatorio',
+    })
+  })
+
+  test('treats whitespace-only values as empty', () => {
+    expect(validatePostDraft({ title: '   ', body: 'Texto' })).toEqual({
+      title: 'El título es obligatorio',
+    })
+  })
+
+  test('accepts a complete draft', () => {
+    expect(validatePostDraft({ title: 'Título', body: 'Texto' })).toEqual({})
   })
 })

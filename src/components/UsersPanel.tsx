@@ -5,7 +5,12 @@ import { filterUsersByName } from '../utils'
 import { Card, ErrorMessage, StatusMessage } from './ui/display'
 import { TextField } from './ui/form'
 
-export function UsersPanel() {
+interface UsersPanelProps {
+  selectedUserId: number | null
+  onSelect: (user: User) => void
+}
+
+export function UsersPanel({ selectedUserId, onSelect }: UsersPanelProps) {
   const [query, setQuery] = useState('')
   const { data: users, isPending, isError, refetch } = useUsers()
 
@@ -28,13 +33,23 @@ export function UsersPanel() {
           onRetry={() => void refetch()}
         />
       ) : (
-        <UserList users={filterUsersByName(users, query)} query={query} />
+        <UserList
+          users={filterUsersByName(users, query)}
+          query={query}
+          selectedUserId={selectedUserId}
+          onSelect={onSelect}
+        />
       )}
     </Card>
   )
 }
 
-function UserList({ users, query }: { users: User[]; query: string }) {
+interface UserListProps extends UsersPanelProps {
+  users: User[]
+  query: string
+}
+
+function UserList({ users, query, selectedUserId, onSelect }: UserListProps) {
   if (users.length === 0) {
     return (
       <StatusMessage>
@@ -44,13 +59,22 @@ function UserList({ users, query }: { users: User[]; query: string }) {
   }
 
   return (
-    <ul className="flex flex-col gap-1">
+    <ul className="-m-1 flex max-h-72 flex-col gap-1 overflow-y-auto p-1 md:max-h-[calc(100vh-16rem)]">
       {users.map((user) => (
-        <li key={user.id} className="rounded-lg px-3 py-2">
-          <p className="font-medium">{user.name}</p>
-          <p className="text-sm break-words text-slate-600">
-            {user.username} · {user.email}
-          </p>
+        <li key={user.id}>
+          <button
+            type="button"
+            aria-pressed={user.id === selectedUserId}
+            onClick={() => {
+              onSelect(user)
+            }}
+            className="w-full rounded-lg px-3 py-2 text-left transition hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none aria-pressed:bg-indigo-50 aria-pressed:ring-1 aria-pressed:ring-indigo-500"
+          >
+            <span className="block font-medium">{user.name}</span>
+            <span className="block text-sm break-words text-slate-600">
+              {user.username} · {user.email}
+            </span>
+          </button>
         </li>
       ))}
     </ul>
