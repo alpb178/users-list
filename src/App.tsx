@@ -17,10 +17,12 @@ function App() {
           </h1>
         </header>
         <main className="grid items-start gap-6 md:grid-cols-3">
-          <UsersPanel
-            selectedUserId={selectedUser?.id ?? null}
-            onSelect={setSelectedUser}
-          />
+          <div className="md:sticky md:top-8">
+            <UsersPanel
+              selectedUserId={selectedUser?.id ?? null}
+              onSelect={setSelectedUser}
+            />
+          </div>
           <div className="md:col-span-2">
             <PostsPanel
               user={selectedUser}
