@@ -1,13 +1,15 @@
 import type { Post, User } from '../api'
 import { usePosts } from '../hooks'
+import { PostForm } from './PostForm'
 import { Card, ErrorMessage, StatusMessage } from './ui/display'
 
 interface PostsPanelProps {
   user: User | null
   createdPosts: Post[]
+  onCreated: (post: Post) => void
 }
 
-export function PostsPanel({ user, createdPosts }: PostsPanelProps) {
+export function PostsPanel({ user, createdPosts, onCreated }: PostsPanelProps) {
   if (!user) {
     return (
       <Card title="Publicaciones">
@@ -20,6 +22,7 @@ export function PostsPanel({ user, createdPosts }: PostsPanelProps) {
 
   return (
     <Card title={`Publicaciones de ${user.name}`}>
+      <PostForm key={user.id} userId={user.id} onCreated={onCreated} />
       <UserPosts userId={user.id} createdPosts={createdPosts} />
     </Card>
   )
