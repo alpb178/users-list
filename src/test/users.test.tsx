@@ -34,3 +34,33 @@ describe('users list', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })
+
+describe('user search', () => {
+  test('filters users by name and restores them when cleared', async () => {
+    const { user } = renderApp()
+    await screen.findByText('Leanne Graham')
+    const search = screen.getByRole('searchbox', { name: 'Buscar por nombre' })
+
+    await user.type(search, 'lea')
+
+    expect(screen.getByText('Leanne Graham')).toBeInTheDocument()
+    expect(screen.queryByText('Ervin Howell')).not.toBeInTheDocument()
+
+    await user.clear(search)
+
+    for (const { name } of users) {
+      expect(screen.getByText(name)).toBeInTheDocument()
+    }
+  })
+
+  test('explains when no user matches', async () => {
+    const { user } = renderApp()
+    await screen.findByText('Leanne Graham')
+
+    await user.type(screen.getByRole('searchbox'), 'zzz')
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'No hay usuarios que coincidan con «zzz».',
+    )
+  })
+})
