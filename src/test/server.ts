@@ -38,7 +38,7 @@ export const posts: Post[] = [
   },
 ]
 
-export const handlers = [
+const handlers = [
   http.get(`${API_BASE_URL}/users`, () => HttpResponse.json(users)),
   http.get(`${API_BASE_URL}/posts`, ({ request }) => {
     const userId = Number(new URL(request.url).searchParams.get('userId'))

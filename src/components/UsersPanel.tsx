@@ -59,7 +59,7 @@ function UserList({ users, query, selectedUserId, onSelect }: UserListProps) {
   }
 
   return (
-    <ul className="flex flex-col gap-1">
+    <ul className="-m-1 flex max-h-72 flex-col gap-1 overflow-y-auto p-1 md:max-h-[calc(100vh-16rem)]">
       {users.map((user) => (
         <li key={user.id}>
           <button

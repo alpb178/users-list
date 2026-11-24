@@ -16,7 +16,7 @@ export interface Post {
 
 export type NewPost = Omit<Post, 'id'>
 
-export class ApiError extends Error {
+class ApiError extends Error {
   readonly status: number
 
   constructor(status: number, message: string) {
