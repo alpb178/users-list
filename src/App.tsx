@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { User } from './api'
+import { PostsPanel } from './components/PostsPanel'
 import { UsersPanel } from './components/UsersPanel'
 
 function App() {
@@ -18,6 +19,9 @@ function App() {
             selectedUserId={selectedUser?.id ?? null}
             onSelect={setSelectedUser}
           />
+          <div className="md:col-span-2">
+            <PostsPanel user={selectedUser} createdPosts={[]} />
+          </div>
         </main>
       </div>
     </div>
