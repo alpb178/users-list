@@ -2,18 +2,11 @@ import { screen } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, test } from 'vitest'
 import { API_BASE_URL } from '../api'
-import { renderApp } from './render'
+import { renderApp, renderAppAndSelectUser } from './render'
 import { posts, server } from './server'
 
 const userButton = (name: string) =>
   screen.getByRole('button', { name: new RegExp(name) })
-
-async function renderAndSelect(name: string) {
-  const result = renderApp()
-  await screen.findByText(name)
-  await result.user.click(userButton(name))
-  return result
-}
 
 describe('user posts', () => {
   test('asks to choose a user before any is selected', async () => {
@@ -25,7 +18,7 @@ describe('user posts', () => {
   })
 
   test('shows the posts of the selected user', async () => {
-    await renderAndSelect('Leanne Graham')
+    await renderAppAndSelectUser('Leanne Graham')
 
     expect(userButton('Leanne Graham')).toHaveAttribute('aria-pressed', 'true')
     expect(
@@ -39,7 +32,7 @@ describe('user posts', () => {
   })
 
   test('explains when the user has no posts', async () => {
-    await renderAndSelect('Ervin Howell')
+    await renderAppAndSelectUser('Ervin Howell')
 
     expect(
       await screen.findByText('Este usuario no tiene publicaciones.'),
@@ -54,7 +47,7 @@ describe('user posts', () => {
         { once: true },
       ),
     )
-    const { user } = await renderAndSelect('Leanne Graham')
+    const { user } = await renderAppAndSelectUser('Leanne Graham')
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'No se pudieron cargar las publicaciones.',
