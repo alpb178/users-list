@@ -50,29 +50,28 @@ src/
 ## Decisiones
 
 - **Vite y no Next.js.** Es una sola pantalla que funciona entera en el navegador contra una API pública: no hay SEO, rutas ni secretos que justifiquen un servidor. Vite es React puro, con menos configuración, y Vitest reutiliza la misma.
+
 - **Una sola puerta a la API.** Solo `api.ts` conoce la URL y llama a `fetch`. Los componentes consumen hooks de `hooks.ts` y nunca hacen peticiones directamente.
+
 - **TanStack Query para los datos remotos.** Resuelve los estados de carga y error, el reintento y la caché. Las publicaciones se guardan en caché por usuario (clave `['posts', userId]`), así que una respuesta lenta de un usuario anterior nunca sustituye a las del actual. Hacerlo a mano con `useEffect` es fácil de hacer mal.
+
 - **Publicaciones creadas en un estado aparte.** JSONPlaceholder no guarda nada: si se piden de nuevo las publicaciones, la nueva no está. Si la insertara en la caché de TanStack Query, desaparecería en el siguiente refetch (por ejemplo, al pulsar "Reintentar"). Por eso viven en `useCreatedPosts`, agrupadas por usuario, y se muestran primero. Duran mientras no se recargue la página.
+
 - **Ids locales negativos.** La API responde siempre `id: 101`, así que dos publicaciones nuevas tendrían la misma `key`. Cada una recibe un id local negativo (-1, -2…), que nunca coincide con los del servidor (1 a 100).
-- **Sin librería de formularios ni de estado global.** El formulario tiene dos campos obligatorios: un `useState` y una función de validación pura de pocas líneas, con su test, bastan. Formik o React Hook Form añadirían su propio modelo para una sola regla. Zustand es para estado compartido entre componentes alejados, y aquí el borrador solo lo usa el formulario y las publicaciones creadas bajan un nivel por props. Con un formulario más grande usaría React Hook Form + Zod.
+
 - **La publicación va al usuario para el que se envió.** El callback que la guarda está en las opciones de `useMutation`, no en `mutate`, así que funciona aunque cambies de usuario mientras se envía.
+
 - **Componentes reutilizables agrupados.** Las piezas genéricas están en dos archivos según su función: controles de formulario y elementos de presentación. Hay un archivo por pantalla, no uno por cada componente pequeño.
+
 - **Máximo 150 líneas por archivo**, comprobado por la regla `max-lines` de ESLint. Cuando `ui.tsx` llegó al límite, se dividió por responsabilidad.
+
 - **Tests de comportamiento con MSW.** Los tests renderizan la app real y simulan la API a nivel de red, así que prueban lo que ve el usuario, no los mocks. Buscan los elementos por rol y por etiqueta, como un lector de pantalla. La lógica pura (filtro y validación) tiene tests unitarios.
+
 - **Accesibilidad.** Los estados de carga y vacío usan `role="status"` y los errores `role="alert"`. Los campos tienen etiqueta y su error asociado con `aria-describedby`. Al enviar el formulario con errores, el foco va al primer campo inválido. El usuario seleccionado se marca con `aria-pressed`.
+
 - **TypeScript 6.0 y no 7.** `typescript-eslint` todavía no es compatible con la 7, y el lint con tipos merecía más la pena.
+
 - **Git.** Ramas `feat/*`, `chore/*` y `docs/*` con PR a `develop`, y un PR de `develop` a `main` cada 5 PRs. Todo se fusiona con merge commit, no squash, para que se vea cada commit.
-
-## Qué haría con más tiempo
-
-- **Validar las respuestas de la API con Zod**: ahora se confía en que tengan la forma esperada.
-- **React Hook Form + Zod** si el formulario creciera. Para dos campos obligatorios, una función pura es suficiente.
-- **Optimistic updates**: mostrar la publicación al instante y retirarla si falla.
-- **Guardar las publicaciones creadas en `localStorage`** para que sobrevivan a una recarga.
-- **Búsqueda sin tildes** (`normalize('NFD')`) y también por usuario o correo.
-- **Tests end-to-end con Playwright** contra la app real, además de los de integración.
-- **Desplegar en Vercel** con previews por PR.
-- **Husky + commitlint** para forzar Conventional Commits en local.
 
 ## Cómo usé la IA
 
@@ -94,9 +93,12 @@ Trabajé con **Claude Code** y [Spec Kit](https://github.com/github/spec-kit), e
 **Qué corregí o decidí yo**
 
 - **La estructura.** El primer plan usaba carpetas por funcionalidad, con un archivo por componente y por hook (unos 25 archivos). Lo cambié a: componentes reutilizables agrupados, un único archivo para la API, los hooks aparte y un máximo de 150 líneas por archivo.
+
 - **Vite en lugar de Next.** El README inicial del repo decía Next; lo confirmé después de comparar las dos opciones.
+
 - **El idioma.** La interfaz y el README en español; el código, los commits y los PRs en inglés.
-- **`useCallback` innecesarios.** La IA había envuelto en `useCallback` las funciones de `useCreatedPosts`. Al preguntarle por qué, reconoció que nadie compara esas referencias: no hay `React.memo` ni dependencias de efectos. Los quité.
+
+- **`useCallback` innecesarios.** La IA había envuelto en `useCallback` las funciones de `useCreatedPosts`.
 
 **Qué hubo que corregir durante la implementación**, porque la realidad no coincidía con el plan:
 
@@ -106,3 +108,5 @@ Trabajé con **Claude Code** y [Spec Kit](https://github.com/github/spec-kit), e
 - Al revisar en móvil, elegir un usuario no mostraba ningún cambio visible: las publicaciones quedaban unos 900 px más abajo. Lo resolví dando a la lista de usuarios su propio scroll.
 
 El historial de commits y la descripción de cada PR cuentan el proceso paso a paso.
+
+Tiempo de desarrollo : 2 hrs
