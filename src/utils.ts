@@ -8,3 +8,17 @@ export function filterUsersByName(users: User[], query: string): User[] {
     user.name.toLowerCase().includes(normalizedQuery),
   )
 }
+
+export interface PostDraft {
+  title: string
+  body: string
+}
+
+export type PostDraftErrors = Partial<Record<keyof PostDraft, string>>
+
+export function validatePostDraft(draft: PostDraft): PostDraftErrors {
+  const errors: PostDraftErrors = {}
+  if (!draft.title.trim()) errors.title = 'El título es obligatorio'
+  if (!draft.body.trim()) errors.body = 'El texto es obligatorio'
+  return errors
+}
