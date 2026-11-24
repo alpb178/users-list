@@ -26,7 +26,14 @@ describe('create post', () => {
     expect(screen.getByText('El título es obligatorio')).toBeInTheDocument()
     expect(screen.getByText('El texto es obligatorio')).toBeInTheDocument()
     expect(titleField()).toHaveAttribute('aria-invalid', 'true')
+    expect(titleField()).toHaveFocus()
     expect(onPost).not.toHaveBeenCalled()
+
+    await user.type(titleField(), 'Título')
+
+    expect(
+      screen.queryByText('El título es obligatorio'),
+    ).not.toBeInTheDocument()
   })
 
   test('adds the new post at the top of the list and clears the form', async () => {
@@ -44,5 +51,47 @@ describe('create post', () => {
     })
     expect(titleField()).toHaveValue('')
     expect(bodyField()).toHaveValue('')
+    expect(screen.getByRole('status')).toHaveTextContent('Publicación creada.')
+  })
+
+  test('keeps the draft and explains when publishing fails', async () => {
+    server.use(
+      http.post(`${API_BASE_URL}/posts`, () =>
+        HttpResponse.json(null, { status: 500 }),
+      ),
+    )
+    const { user } = await renderAppAndSelectUser('Leanne Graham')
+
+    await user.type(titleField(), 'Título')
+    await user.type(bodyField(), 'Texto')
+    await user.click(submitButton())
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se pudo publicar. Inténtalo de nuevo.',
+    )
+    expect(titleField()).toHaveValue('Título')
+    expect(bodyField()).toHaveValue('Texto')
+  })
+
+  test('keeps every created post after switching users', async () => {
+    const { user } = await renderAppAndSelectUser('Leanne Graham')
+    await screen.findByRole('heading', { level: 3, name: posts[0]?.title })
+
+    for (const title of ['Primera', 'Segunda']) {
+      await user.type(titleField(), title)
+      await user.type(bodyField(), 'Texto')
+      await user.click(submitButton())
+      await screen.findByRole('heading', { level: 3, name: title })
+    }
+    await user.click(screen.getByRole('button', { name: /Ervin Howell/ }))
+    await screen.findByText('Este usuario no tiene publicaciones.')
+    await user.click(screen.getByRole('button', { name: /Leanne Graham/ }))
+
+    const headings = await screen.findAllByRole('heading', { level: 3 })
+    expect(headings.map((heading) => heading.textContent)).toEqual([
+      'Segunda',
+      'Primera',
+      ...posts.map((post) => post.title),
+    ])
   })
 })
