@@ -1,5 +1,5 @@
 import { skipToken, useMutation, useQuery } from '@tanstack/react-query'
-import { useCallback, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { createPost, getPostsByUser, getUsers, type Post } from './api'
 
 export function useUsers() {
@@ -37,19 +37,18 @@ export function useCreatedPosts() {
   const [postsByUser, setPostsByUser] = useState<Record<number, Post[]>>({})
   const lastLocalId = useRef(0)
 
-  const add = useCallback((post: Post) => {
+  function add(post: Post) {
     lastLocalId.current -= 1
     const localPost = { ...post, id: lastLocalId.current }
     setPostsByUser((current) => ({
       ...current,
       [post.userId]: [localPost, ...(current[post.userId] ?? [])],
     }))
-  }, [])
+  }
 
-  const postsFor = useCallback(
-    (userId: number) => postsByUser[userId] ?? NO_POSTS,
-    [postsByUser],
-  )
+  function postsFor(userId: number) {
+    return postsByUser[userId] ?? NO_POSTS
+  }
 
   return { add, postsFor }
 }
