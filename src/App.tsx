@@ -1,6 +1,11 @@
+import { useState } from 'react'
+import type { User } from './api'
+import { PostsPanel } from './components/PostsPanel'
 import { UsersPanel } from './components/UsersPanel'
 
 function App() {
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 md:p-8">
@@ -10,7 +15,13 @@ function App() {
           </h1>
         </header>
         <main className="grid items-start gap-6 md:grid-cols-3">
-          <UsersPanel />
+          <UsersPanel
+            selectedUserId={selectedUser?.id ?? null}
+            onSelect={setSelectedUser}
+          />
+          <div className="md:col-span-2">
+            <PostsPanel user={selectedUser} createdPosts={[]} />
+          </div>
         </main>
       </div>
     </div>
