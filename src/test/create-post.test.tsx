@@ -1,5 +1,5 @@
 import { screen, waitFor } from '@testing-library/react'
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 import { describe, expect, test, vi } from 'vitest'
 import { API_BASE_URL } from '../api'
 import { renderAppAndSelectUser } from './render'
@@ -52,6 +52,26 @@ describe('create post', () => {
     expect(titleField()).toHaveValue('')
     expect(bodyField()).toHaveValue('')
     expect(screen.getByRole('status')).toHaveTextContent('Publicación creada.')
+  })
+
+  test('disables the button while publishing', async () => {
+    server.use(
+      http.post(`${API_BASE_URL}/posts`, async () => {
+        await delay(50)
+        return HttpResponse.json(
+          { id: 101, userId: 1, title: 'Título', body: 'Texto' },
+          { status: 201 },
+        )
+      }),
+    )
+    const { user } = await renderAppAndSelectUser('Leanne Graham')
+
+    await user.type(titleField(), 'Título')
+    await user.type(bodyField(), 'Texto')
+    await user.click(submitButton())
+
+    expect(screen.getByRole('button', { name: 'Publicando…' })).toBeDisabled()
+    expect(await screen.findByText('Publicación creada.')).toBeInTheDocument()
   })
 
   test('keeps the draft and explains when publishing fails', async () => {
