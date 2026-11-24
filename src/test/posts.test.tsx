@@ -5,9 +5,13 @@ import { API_BASE_URL } from '../api'
 import { renderApp } from './render'
 import { posts, server } from './server'
 
+const userButton = (name: string) =>
+  screen.getByRole('button', { name: new RegExp(name) })
+
 async function renderAndSelect(name: string) {
   const result = renderApp()
-  await result.user.click(await screen.findByRole('button', { name }))
+  await screen.findByText(name)
+  await result.user.click(userButton(name))
   return result
 }
 
@@ -23,9 +27,7 @@ describe('user posts', () => {
   test('shows the posts of the selected user', async () => {
     await renderAndSelect('Leanne Graham')
 
-    expect(
-      screen.getByRole('button', { name: 'Leanne Graham' }),
-    ).toHaveAttribute('aria-pressed', 'true')
+    expect(userButton('Leanne Graham')).toHaveAttribute('aria-pressed', 'true')
     expect(
       screen.getByRole('heading', { name: 'Publicaciones de Leanne Graham' }),
     ).toBeInTheDocument()
@@ -57,7 +59,7 @@ describe('user posts', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'No se pudieron cargar las publicaciones.',
     )
-    expect(screen.getByRole('button', { name: 'Ervin Howell' })).toBeVisible()
+    expect(userButton('Ervin Howell')).toBeVisible()
 
     await user.click(screen.getByRole('button', { name: 'Reintentar' }))
 
