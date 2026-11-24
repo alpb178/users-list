@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Post } from '../api'
 import { useCreatePost } from '../hooks'
 import {
@@ -6,6 +6,7 @@ import {
   type PostDraft,
   type PostDraftErrors,
 } from '../utils'
+import { ErrorMessage, StatusMessage } from './ui/display'
 import { Button, TextAreaField, TextField } from './ui/form'
 
 const EMPTY_DRAFT: PostDraft = { title: '', body: '' }
@@ -18,16 +19,27 @@ interface PostFormProps {
 export function PostForm({ userId, onCreated }: PostFormProps) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [errors, setErrors] = useState<PostDraftErrors>({})
+  const titleRef = useRef<HTMLInputElement>(null)
+  const bodyRef = useRef<HTMLTextAreaElement>(null)
   const createPost = useCreatePost(onCreated)
 
   function updateField(field: keyof PostDraft, value: string) {
     setDraft((current) => ({ ...current, [field]: value }))
+    setErrors((current) => ({ ...current, [field]: undefined }))
+    if (createPost.isSuccess || createPost.isError) createPost.reset()
   }
 
   function submit() {
     const validationErrors = validatePostDraft(draft)
     setErrors(validationErrors)
-    if (Object.keys(validationErrors).length > 0) return
+    if (validationErrors.title) {
+      titleRef.current?.focus()
+      return
+    }
+    if (validationErrors.body) {
+      bodyRef.current?.focus()
+      return
+    }
 
     createPost.mutate(
       { userId, title: draft.title.trim(), body: draft.body.trim() },
@@ -50,6 +62,7 @@ export function PostForm({ userId, onCreated }: PostFormProps) {
       className="flex flex-col gap-3 rounded-lg bg-slate-50 p-4"
     >
       <TextField
+        ref={titleRef}
         label="Título"
         value={draft.title}
         error={errors.title}
@@ -58,6 +71,7 @@ export function PostForm({ userId, onCreated }: PostFormProps) {
         }}
       />
       <TextAreaField
+        ref={bodyRef}
         label="Texto"
         value={draft.body}
         error={errors.body}
@@ -65,9 +79,17 @@ export function PostForm({ userId, onCreated }: PostFormProps) {
           updateField('body', event.target.value)
         }}
       />
-      <Button type="submit" className="self-end">
-        Publicar
-      </Button>
+      {createPost.isError && (
+        <ErrorMessage message="No se pudo publicar. Inténtalo de nuevo." />
+      )}
+      <div className="flex items-center justify-end gap-3">
+        {createPost.isSuccess && (
+          <StatusMessage>Publicación creada.</StatusMessage>
+        )}
+        <Button type="submit" disabled={createPost.isPending}>
+          {createPost.isPending ? 'Publicando…' : 'Publicar'}
+        </Button>
+      </div>
     </form>
   )
 }
